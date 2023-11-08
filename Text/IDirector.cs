@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nonno.Text;
 public interface IDirector<TTarget>
@@ -14,11 +9,11 @@ public interface IDirector<TTarget>
 
 public readonly struct Chain<THandler, TTarget> : IDirector<TTarget>, IFormattable where THandler : IDirector<TTarget>
 {
-    readonly ImmutableArray<THandler> _handlers;
+    readonly THandler[] _handlers;
 
-    public Chain(ImmutableArray<THandler> handlers)
+    public Chain(params THandler[] handlerParams)
     {
-        _handlers = handlers;
+        _handlers = handlerParams;
     }
 
     public void Direct(TTarget target)
@@ -35,7 +30,7 @@ public readonly struct Chain<THandler, TTarget> : IDirector<TTarget>, IFormattab
         formatProvider ??= CultureInfo.CurrentCulture;
         if (formatProvider.GetFormat(typeof(ICustomFormatter<Chain<THandler, TTarget>>)) is ICustomFormatter<Chain<THandler, TTarget>> f)
         {
-            var r = new StringBuilder();
+            var r = new StringWeaver();
             f.Format(this, format, to: r);
             return r.ToString();
         }

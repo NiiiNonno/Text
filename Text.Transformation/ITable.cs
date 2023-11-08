@@ -4,21 +4,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Nonno.Assets.Collections;
+using SysGC = System.Collections.Generic;
+using NAC = Nonno.Assets.Collections;
 
-namespace Nonno.Text;
+namespace Nonno.Text.Transformation;
 
-public interface ITable<TKey, TValue>
+public class DictionaryTable<TKey, TValue> : ITable<TKey, TValue> where TKey : notnull
 {
-    TValue? this[TKey key] { get; set; }
+    readonly SysGC::IDictionary<TKey, TValue> _dict;
 
-    bool ContainsKey(TKey key);
-    bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value);
-    bool TrySetValue(TKey key, TValue value);
-}
-
-public class DictionaryTable<TKey, TValue> : ITable<TKey, TValue>
-{
-    readonly IDictionary<TKey, TValue> _dict;
+    public NAC::ISet<TKey> Keys => WholeSet<TKey>.Instance;
 
     public TValue? this[TKey key]
     {
@@ -46,7 +42,7 @@ public class DictionaryTable<TKey, TValue> : ITable<TKey, TValue>
         }
     }
 
-    public DictionaryTable(IDictionary<TKey, TValue> dictionary) : this()
+    public DictionaryTable(SysGC::IDictionary<TKey, TValue> dictionary) : this()
     {
         if (default(TValue) is not null) throw new ArgumentException("有照型を引数に取ることはできません。", nameof(TValue));
         _dict = dictionary;
@@ -66,6 +62,7 @@ public class ListTable<TValue> : ITable<int, TValue>
 {
     TValue?[] _a = Array.Empty<TValue?>();
 
+    public NAC::ISet<int> Keys => WholeSet<int>.Instance;
     public TValue? this[int key]
     { 
         get

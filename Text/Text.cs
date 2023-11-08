@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using STBuilder = System.Text.StringBuilder;
 
 namespace Nonno.Text;
-public abstract class Text
+public class Text
 {
     readonly ListTable<IWeaver> _table;
     IWeaver _weaver;
     int _current;
-
-    public bool RecordDirectors { get; protected set; }
 
     protected Text()
     {
@@ -48,33 +48,70 @@ public abstract class Text
     public void Weave<TDirector, TWeaver>(TDirector director) where TDirector : IDirector<TWeaver> where TWeaver : class, IWeaver
     {
         var w = GetWeaver<TWeaver>();
-        if (RecordDirectors) Record<TDirector, TWeaver>(director);
         director.Direct(w);
     }
 
-    protected virtual void Record<TDirector, TWeaver>(TDirector director) where TDirector : IDirector<TWeaver> where TWeaver : class, IWeaver { }
-
     protected virtual TWeaver InitializeWeaver<TWeaver>() where TWeaver : class, IWeaver => throw new NotSupportedException();
 
-    public abstract void Clear();
-
-    public Text Copy();
-
     static volatile int _max;
-
-    public static TText Brank<TText>() where TText : Text
-    {
-
-    }
 
     static class ValueOf<T> where T : IWeaver
     {
         public static int index = Interlocked.Increment(ref _max);
     }
 
-    static class ValueOf_2<T> where T : Text
+    public class ListTable<TValue>
     {
-        public static T _instance;
+        TValue?[] _a = Array.Empty<TValue?>();
+
+        public TValue? this[int key]
+        {
+            get
+            {
+                var i = unchecked((uint)key);
+                if (i < _a.Length) return _a[i];
+                return default;
+            }
+            set
+            {
+                if (key < 0) throw new IndexOutOfRangeException();
+
+                if (value is null)
+                {
+                    if (key < _a.Length) return;
+                    _a[key] = default;
+                }
+                else
+                {
+                    if (key < _a.Length) Array.Resize(ref _a, Math.Max(key, _a.Length << 1));
+                    _a[key] = value;
+                }
+            }
+        }
+
+        public bool ContainsKey(int key) => key > 0;
+        public bool TryGetValue(int key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (this[key] is { } v)
+            {
+                value = v;
+                return true;
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
+        }
+        public bool TrySetValue(int key, TValue value)
+        {
+            if (key < 0) return false;
+
+            if (key < _a.Length) Array.Resize(ref _a, Math.Max(key, _a.Length << 1));
+            _a[key] = value;
+
+            return true;
+        }
     }
 }
 
@@ -83,12 +120,7 @@ public class StringText : Text
     readonly STBuilder _builder;
 
     StringWeaver? _oW;
-    IBunanWeaver? _bW;
-
-    public override void Clear()
-    {
-        _builder.Clear();
-    }
+    ICodeWeaver<Bunan>? _bW;
 
     protected override TWeaver InitializeWeaver<TWeaver>()
     {

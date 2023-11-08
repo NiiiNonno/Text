@@ -7,6 +7,27 @@ using Discord.WebSocket;
 using Discord;
 
 namespace Nonno.Text.Communication;
+public class DiscordForum
+{
+    readonly SocketChannel _channel;
+
+    public DiscordForum(SocketChannel channel)
+    {
+        _channel = channel;
+        
+    }
+
+    public virtual DiscordText Append()
+    {
+
+    }
+}
+
+public class DiscordText : Text
+{
+
+}
+
 public class DiscordForum<TText> : IForum<TText> where TText : Text, IPersistent<Text>
 {
     private readonly DiscordSocketClient _client;
@@ -21,7 +42,7 @@ public class DiscordForum<TText> : IForum<TText> where TText : Text, IPersistent
         _client.Log += LogAsync;
         _client.Ready += onReady;
         _client.MessageReceived += Receive;
-
+        _client.Guilds.First().Channels.First().P
         Token = token;
     }
 

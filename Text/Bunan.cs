@@ -1,9 +1,12 @@
-﻿namespace Nonno.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace Nonno.Text;
 
 /*
- * H ─ 0:首 1:胴
- * * ┐
+ * H ┐
  * * ┴ 0:単 1:陪 2:長 3:特
+ * * ─ 0:首 1:胴
  * * ┐
  * * ┤
  * * ┤
@@ -22,9 +25,9 @@
  * | 八 k | 九 p | 甲 w | 乙 n | 丙 o | 丁 t | 戊 i | 己 s | 庚 u | 辛 l | 壬 h | 癸 x | 天 . | 地 , | 人 ; | 難 @ |
  *
  * | 無   | 水 E | 金 C | 土 G | 火 F | 木 D | 月 B | 日 A | 〇 _ | 一 M | 二 Q | 三 Z | 四 R | 五 K | 六 Y | 七 J |
- * | 八 K | 九 P | 癸 X | 壬 H | 辛 L | 庚 U | 己 S | 戊 I | 丁 T | 丙 O | 乙 N | 甲 W | 　   | 　   | 　   | 難 ` |
+ * | 八 X | 九 P | 癸 S | 壬 H | 辛 L | 庚 U | 己 V | 戊 I | 丁 T | 丙 O | 乙 N | 甲 W | 　   | 　   | 　   | 難 ` |
  * | 　   | 水 e | 金 c | 土 g | 火 f | 木 d | 月 b | 日 a | 　   | 一 m | 二 q | 三 z | 四 r | 五 k | 六 y | 七 j |
- * | 八 k | 九 p | 癸 x | 壬 h | 辛 l | 庚 u | 己 s | 戊 i | 丁 t | 丙 o | 乙 n | 甲 w | 地 , | 人 ; | 天 . | 難 @ |
+ * | 八 x | 九 p | 癸 s | 壬 h | 辛 l | 庚 u | 己 v | 戊 i | 丁 t | 丙 o | 乙 n | 甲 w | 地 , | 人 ; | 天 . | 難 @ |
  *
  * | 無   | 天   | 丙   | 甲   | 庚   | 戊   | 日   | 壬   | 癸   | 月   | 己   | 辛   | 乙   | 丁   | 地   | 人   |
  * | 〇 _ | 一 A | 二 S | 三 D | 四 F | 五 G | 六 H | 七 J | 八 K | 九 L | 木 C | 火 V | 土 B | 金 N | 水 M | 難 @ |
@@ -34,7 +37,7 @@
  * |100000|100001|100010|100011|100100|100101|100110|100111|101000|101001|101010|101011|101100|101101|101110|101111|
  * |110000|110001|110010|110011|110100|110101|110110|110111|111000|111001|111010|111011|111100|111101|111110|111111|
  */
-public readonly struct Bunan : IDirector<IBunanWeaver>
+public readonly struct Bunan : IDirector<ICodeWeaver<Bunan>>
 {
     readonly byte _code;
 
@@ -79,6 +82,8 @@ public readonly struct Bunan : IDirector<IBunanWeaver>
     public byte Code => _code;
     public int Value => _code & 0b11111;
     public bool IsSeparator => _code == default;
+    public bool IsCapital => (_code & 0b0010_0000) == 0;
+    public bool IsDeleted => Value == 0b11111;
 
     public Bunan(byte code)
     {
@@ -102,9 +107,44 @@ public readonly struct Bunan : IDirector<IBunanWeaver>
         //};
     }
 
-    public void Direct(IBunanWeaver target) => target.Pose(this);
+    public void Direct(ICodeWeaver<Bunan> target) => target.Pose(this);
 
     public static implicit operator int(Bunan code) => code.Value;
     public static implicit operator byte(Bunan code) => (byte)code.Value;
     public static implicit operator Bunan(byte @byte) => new(@byte);
+
+    public const byte CODE_CAPITAL_MIN = 0;
+    public const byte CODE_CAPITAL_MAX = 28;
+
+    public static Bunan E => new (1);
+    public static Bunan C => new (2);
+    public static Bunan G => new (3);
+    public static Bunan F => new (4);
+    public static Bunan D => new (5);
+    public static Bunan B => new (6);
+    public static Bunan A => new(7);
+    public static Bunan _ => new (8);
+    public static Bunan M => new (9);
+    public static Bunan Q => new (10);
+    public static Bunan Z => new (11);
+    public static Bunan R => new(12);
+    public static Bunan K => new (13);
+    public static Bunan Y => new (14);
+    public static Bunan J => new (15);
+    public static Bunan X => new (16);
+    public static Bunan P => new (17);
+    public static Bunan S => new (18);
+    public static Bunan H => new (19);
+    public static Bunan L => new (20);
+    public static Bunan U => new (21);
+    public static Bunan V => new (22);
+    public static Bunan I => new (23);
+    public static Bunan T => new (24);
+    public static Bunan O => new (25);
+    public static Bunan N => new (26);
+    public static Bunan W => new (27);
+    //public static Bunan Et => new (28);
+    //public static Bunan Mn => new (29);
+    //public static Bunan Hv => new (30);
+    public static Bunan Nl => new (255);
 }

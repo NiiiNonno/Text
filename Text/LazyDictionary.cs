@@ -30,12 +30,14 @@ public class CachedDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValue>
         return false;
     }
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _base.GetEnumerator();
+#pragma warning disable CS8767 // NET Standard 2.0以下で発生する。
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         if (_cache.TryGetValue(key, out value)) return true;
         if (_base.TryGetValue(key, out value)) { _cache.Add(key, value); return true; }
         return false;
     }
+#pragma warning restore CS8767
     IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_base).GetEnumerator();
 }
 
